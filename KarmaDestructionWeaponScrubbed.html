@@ -1,0 +1,82 @@
+<html>
+	<body>
+		<button type="button" onClick="runKarmaDestruct()">Begin Destruction</button>
+		<button type="button" onClick="stopDestruction()">End Destruction</button>
+		</br>
+		</br>
+		<label>Set User:</label>
+		<input type="text" id="txtKarmaUser"/>
+		</br>
+		</br>
+		<label>Amount of Karma to add:</label>
+		<input type="text" id="txtKarmaLevel"/>
+		</br>
+		</br>
+		<select id="ddlChatRoom">
+		  <option value="1549135">My Chat Room</option>
+		  <option value="949276">Imaginauts</option>
+		</select>
+		</br>
+		</br>
+		<textarea id="areaLog" style="height: 600px; width: 1000px;"></textarea>
+		<script src="http://code.jquery.com/jquery.js"></script>
+		<script>
+			
+				var chatRoom = $("#ddlChatRoom").val();
+				
+				// Imaginauts: 949276
+				// My testing room: 1549135
+				var personToDestruct;
+				var continueDestruction = false;
+				var destructor;
+				var karmaLevel = 0;
+				
+				<!-- runKarmaDestruct(); -->
+				
+				function runKarmaDestruct() {
+					karmaLevel = $("#txtKarmaLevel").val();
+					personToDestruct = $("#txtKarmaUser").val();
+					
+					karmaLevel = parseInt(karmaLevel);					
+					if (karmaLevel > 0) {
+						sendNotification('WARNING: '+personToDestruct+' IS ABOUT TO FEEL THE PUNISHMENT.');
+						destructor = setInterval(function(){ karmaDestruct("--"); if(karmaLevel-- == 0) stopDestruction();}, 3000);
+					}
+					else if (karmaLevel < 0) {
+						sendNotification('ALERT: '+personToDestruct+' IS ABOUT TO BE BLESSED WITH "+karmaLevel+" KARMA".');
+						destructor = setInterval(function(){ karmaDestruct("++"); if(karmaLevel++ == 0) stopDestruction();}, 3000);
+					}
+					else alert("really... you set the karma delta to 0?...");
+				}
+				
+				function stopDestruction() {
+					clearInterval(destructor);
+				}
+
+				function karmaDestruct(delta){
+					console.log("sending");
+					$.ajax({
+						url:"https://api.hipchat.com/v2/room/"+ chatRoom +"/message?auth_token=",
+						type:"POST",
+						contentType: "application/json",
+						data:JSON.stringify({message: "@"+personToDestruct+" " + delta}),
+						success: function(data) {
+						$("#areaLog").val($("#areaLog").val() + "changing Karma...");
+						}
+					});
+				}  
+				
+				function sendNotification(notificationMessage){
+					console.log("sending");
+					$.ajax({
+						url:"https://api.hipchat.com/v2/room/"+ chatRoom +"/notification?auth_token=",
+						type:"POST",
+						contentType: "application/json",
+						data:JSON.stringify({message: notificationMessage}),
+						success: function(data) {
+						}
+					});
+				}  
+		</script>
+	</body>
+</html>
